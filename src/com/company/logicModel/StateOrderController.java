@@ -31,22 +31,6 @@ public class StateOrderController {
     }
 
 
-    // per inserire un nuovo item devo vedere prima che non abbia pagato
-    public void addNewItem(int idOrder, List<Item> items) throws SQLException, ClassNotFoundException {
-        Order o=orderController.getOrderById(idOrder);
-        //mi controlla se l'ordine esiste altrimenti faccio tronare una exception
-        if ( o == null) throw new IllegalArgumentException("This order do not exist in databse");
-
-        if(Objects.equals(o.getState().getState(),"ordered")&&Objects.equals(o.getPaymentStrategy(),"No payed")) // se l'ordine è solo ordinato si puo eliminare
-        {
-
-            orderDao.insertOrderItem(idOrder,items);
-            orderDao.changePriceToPay(idOrder,items);
-
-        }
-        else throw new IllegalArgumentException("This order can not be deleted");
-
-    }
 
 
 

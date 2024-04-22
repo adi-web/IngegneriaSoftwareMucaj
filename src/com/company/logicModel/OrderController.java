@@ -38,6 +38,21 @@ public class OrderController {
     }
 
 
+    public void deleteOrder(int idOrder) throws SQLException, ClassNotFoundException {
+        if(orderDao.get(idOrder)!=null)
+        {
+            State state=orderDao.get(idOrder).getState();
+
+            if(state.canUpdate()) {
+                orderDao.delete(idOrder);
+            }else throw new IllegalArgumentException("you can not delete this order");
+        }
+        else throw new IllegalArgumentException("This order do not exist");
+    }
+
+
+
+
     public void insertItem(int idOrder, List<Item> items) throws SQLException, ClassNotFoundException {
 
         if(orderDao.get(idOrder)!=null)

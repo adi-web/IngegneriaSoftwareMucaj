@@ -87,6 +87,7 @@ public class Main {
 
        StateOrderController stateOrderController= new StateOrderController(orderController,orderDao);
 
+       stateOrderController.placeOrder(1);
        stateOrderController.makeReady(1);
        stateOrderController.takeAndDeliver(1,1);
        stateOrderController.orderDelivered(1);

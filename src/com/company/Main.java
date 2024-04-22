@@ -92,6 +92,7 @@ public class Main {
        stateOrderController.takeAndDeliver(1,1);
        stateOrderController.orderDelivered(1);
 
+
        Order orderInfo=orderController.getOrderById(1);
         Customer customerInfo=customerController.get(orderInfo.getIdC());
         System.out.println("Info ordine numero "+ orderInfo.getId() +" di "+ customerInfo.getName()+" "+ customerInfo.getSurname());

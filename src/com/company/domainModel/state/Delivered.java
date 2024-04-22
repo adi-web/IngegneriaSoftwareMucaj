@@ -7,6 +7,17 @@ public class Delivered extends State{
     }
 
     @Override
+    public boolean canUpdate() {
+        return false;
+    }
+
+    @Override
+    public boolean canDelete() {
+        System.out.println("L'ordine non può essere eliminato");
+        return false;
+    }
+
+    @Override
     public String getState() {
         return super.getState();
     }

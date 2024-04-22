@@ -13,17 +13,29 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class QueryCustomerDaoTest {
 
-    private QueryCustomerDao  customerDao;
-    Connection con;
+    private QueryCustomerDao  customerDao=new QueryCustomerDao();;
+    Connection con=Database.getConnection();;
+
+    public QueryCustomerDaoTest() throws SQLException, ClassNotFoundException {
+    }
+
     @BeforeEach
     void conDatabse() throws SQLException, ClassNotFoundException {
-        con= Database.getConnection();
-        customerDao=new QueryCustomerDao();
+
+
+
 
         con.prepareStatement("DELETE FROM customer").executeUpdate();
         con.prepareStatement("DELETE FROM user").executeUpdate();
+        con.prepareStatement("DELETE FROM address").executeUpdate();
+        con.prepareStatement("ALTER TABLE customer AUTO_INCREMENT =0").executeUpdate();
+
+        con.prepareStatement("INSERT INTO address(idAddress,nameAddress,numberAddress,city)VALUES (1,'Via solliccinao ',18,50018)").executeUpdate();
+        con.prepareStatement("INSERT INTO address(idAddress,nameAddress,numberAddress,city)VALUES (2,'Via baccio da montelupo ',22,50018)").executeUpdate();
 
 
         con.prepareStatement("INSERT INTO user (idUser,name,surname,phone,address,role) VALUES (1,'andrea','petrucci','345680239',1,1)").executeUpdate();
@@ -37,26 +49,31 @@ public class QueryCustomerDaoTest {
 
     }
     @AfterEach
-    void close() throws SQLException, ClassNotFoundException {
-        con=Database.getConnection();
-        customerDao=new QueryCustomerDao();;
-        //con.prepareStatement("DELETE FROM orderitem").executeUpdate();
-        con.prepareStatement("DELETE FROM myorder").executeUpdate();
+    void close() throws SQLException{
 
+        con.prepareStatement("DELETE FROM myorder").executeUpdate();
         con.prepareStatement("DELETE FROM customer").executeUpdate();
         con.prepareStatement("DELETE FROM user").executeUpdate();
-
         Database.closeConnection(con);
     }
 
     @Test
     void testInsert() throws SQLException, ClassNotFoundException {
-        Customer customer=new Customer(29,"admir","mucaj","34597793434",1);
+
+        Customer customer;
+        customer=new Customer(9,"andrea","petrucci","345680239",1);
+
+        Customer finalCustomer = customer;
+        Exception exception = assertThrows(Exception.class, () -> customerDao.insert(finalCustomer));
+        Assertions.assertEquals("This customer exist", exception.getMessage());
+
+
+        customer=new Customer(11,"admir","mucaj","34597793434",1);
         customerDao.insert(customer);
 
-        Customer c=customerDao.get(29);
+        Customer c=customerDao.get(11);
         Assertions.assertNotNull(c);
-        Assertions.assertEquals(29,c.getId());
+        Assertions.assertEquals(11,c.getId());
     }
 
     @Test

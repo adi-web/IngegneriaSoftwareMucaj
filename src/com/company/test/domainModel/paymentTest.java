@@ -27,7 +27,7 @@ class paymentTest {
     @Test
     void changePayment(){
         paymentStrategy=new CreditCardPayment("32434524","3434","34");
-        paymentStrategy.pay();
+        paymentStrategy.pay(23);
         Assertions.assertEquals("Payed Card",paymentStrategy.getPayState());
     }
 }

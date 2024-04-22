@@ -1,19 +1,19 @@
 package com.company.domainModel.state;
 
-public class Ordered extends State {
+public class Saved extends State {
 
-    public Ordered() {
-        this.state="ordered";
+    public Saved() {
+        this.state="saved";
     }
 
     @Override
     public boolean canUpdate() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean canDelete() {
-        return false;
+        return true;
     }
 
     @Override

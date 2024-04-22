@@ -48,6 +48,6 @@ class OrderTest {
     void testSetState(){
         Ordered ordered=new Ordered();
         order.setState(ordered);
-        Assertions.assertEquals("Ordinato",order.getState().getState());
+        Assertions.assertEquals("ordered",order.getState().getState());
     }
 }

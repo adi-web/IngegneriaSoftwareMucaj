@@ -12,7 +12,7 @@ public class PaymentContext {
         this.paymentStrategy = paymentStrategy;
     }
 
-    public void processPayment(double amount) {
-        paymentStrategy.pay();
+    public void processPayment(float amount) {
+        paymentStrategy.pay(amount);
     }
 }

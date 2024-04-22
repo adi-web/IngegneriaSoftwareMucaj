@@ -22,5 +22,8 @@ public interface OrderDao extends DaoGeneral<Order> {
      void updateDeliver(int id) throws SQLException, ClassNotFoundException;
      void updatePayment(int idOrder, PaymentStrategy paymentStrategy) throws SQLException, ClassNotFoundException;
      List<Item> getItems(int idOrder, Connection con) throws SQLException, ClassNotFoundException;
+     void insertOrderItem(int idOrder,List<Item> items) throws SQLException, ClassNotFoundException;
+     void changePriceToPay(int idOrder,List<Item> items) throws SQLException, ClassNotFoundException;
+     void deleteOrderItem(int id,int item_id) throws SQLException, ClassNotFoundException;
 
 }

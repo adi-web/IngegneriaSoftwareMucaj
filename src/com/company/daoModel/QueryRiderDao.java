@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 public class QueryRiderDao implements RiderDao {
 
-    UserDao userDao=new UserDao();
 
     public QueryRiderDao() throws SQLException, ClassNotFoundException {}
 
@@ -22,10 +21,6 @@ public class QueryRiderDao implements RiderDao {
     public void insert(Rider newInsert) throws ClassNotFoundException, SQLException
     {
 
-        int userId=getLastId(newInsert.getPhone());
-
-        if(userId==0)
-        {
             Connection con=Database.getConnection();
             PreparedStatement userInsert=con.prepareStatement("INSERT INTO user(name,surname,phone,address,role) VALUES (?,?,?,?,2)");
 
@@ -36,9 +31,7 @@ public class QueryRiderDao implements RiderDao {
             userInsert.executeUpdate();
             userInsert.close();
 
-           // userDao.insert(newInsert.getName(), newInsert.getSurname(), newInsert.getPhone(),newInsert.getIdAdrress(),2); //role 0 indica che è un lavoratore
-            //int idU=userDao.getIdUser(newInsert.getPhone());
-            userId=getLastId(newInsert.getPhone());
+            int userId=getLastId(newInsert.getPhone());
             PreparedStatement ps=con.prepareStatement("INSERT INTO rider(idRider,plateScooter,startWork,user) VALUES (?,?,?,?)");
             ps.setInt(1,newInsert.getId());
             ps.setString(2,newInsert.getPlateScooter());
@@ -50,8 +43,8 @@ public class QueryRiderDao implements RiderDao {
             ps.executeUpdate();
             ps.close();
             Database.closeConnection(con);
-        }
-        else throw new IllegalArgumentException("This rider Exist");
+
+
 
     }
 
@@ -81,42 +74,11 @@ public class QueryRiderDao implements RiderDao {
     public void delete(int id) {}
 
 
-    /*
-    public int getidRider(int idRider) throws SQLException, ClassNotFoundException {
-
-        Connection con=Database.getConnection();
-        PreparedStatement ps=con.prepareStatement("select user from rider where idRider=?");
-        ps.setInt(1,idRider);
-        ResultSet rs=ps.executeQuery();
-        int id=0;
-
-        while(rs.next())
-        {
-            id = rs.getInt("user");
-
-        }
-        ps.close();
-        rs.close();
-        Database.closeConnection(con);
-        return id;
-    }*/
-
 
     @Override
-    public Rider get(int id) throws SQLException, ClassNotFoundException //il clinete quando vorra sapere le info del rider che gli fa la consegna
+    public Rider get(int id) throws SQLException, ClassNotFoundException
     {
 
-
-       /* //modificare utilizzare join
-        int idR=getidRider(id);
-        UserDao userDao=new UserDao();
-
-        ArrayList<String> arrayList=userDao.getUser(idR);
-        //Rider rider=new Rider();
-        rider.setName(arrayList.get(0));
-        rider.setSurname(arrayList.get(1));
-        rider.setPhone(arrayList.get(2));
-*/
 
 
         Connection con=Database.getConnection();

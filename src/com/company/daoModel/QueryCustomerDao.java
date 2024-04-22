@@ -29,33 +29,55 @@ public class QueryCustomerDao implements CustomerDao {
 
 
 
-        Customer c=newInsert;
-        Connection con = Database.getConnection();
-        PreparedStatement ps=con.prepareStatement("INSERT INTO user(idUser,name,surname,phone,address,role) VALUES (?,?,?,?,?,?)"); //VALUES (1,c.name,c.surname,12323,1,1)");
-        ps.setInt(1,newInsert.getId());
-        ps.setString(2,c.getName());
-        ps.setString(3,c.getSurname());
-        ps.setString(4,c.getPhone());
-        ps.setInt(5,c.getIdAdrress());
-        ps.setInt(6,1);
-        // prima di inserire controllare quanti ordini ha fatto il cliente e mettere dicount a false o meno creare il metodo qua
-        ps.executeUpdate();
-        System.out.println("inserito");
-        ps.close();
-        Database.closeConnection(con);
-        //per inserirlo anche nella tabella customer essendo che c'e una fk
-        insertCustomerId(newInsert.getId());
+        if(!checkCustomer(newInsert)) {
+            Customer c = newInsert;
+            Connection con = Database.getConnection();
+            PreparedStatement ps = con.prepareStatement("INSERT INTO user(idUser,name,surname,phone,address,role) VALUES (?,?,?,?,?,?)"); //VALUES (1,c.name,c.surname,12323,1,1)");
+            ps.setInt(1, newInsert.getId());
+            ps.setString(2, c.getName());
+            ps.setString(3, c.getSurname());
+            ps.setString(4, c.getPhone());
+            ps.setInt(5, c.getIdAdrress());
+            ps.setInt(6, 1);
+            // prima di inserire controllare quanti ordini ha fatto il cliente e mettere dicount a false o meno creare il metodo qua
+            ps.executeUpdate();
+            System.out.println("inserito");
+            ps.close();
+            Database.closeConnection(con);
+            //per inserirlo anche nella tabella customer essendo che c'e una fk
+            insertCustomerId(newInsert.getId());
+        }
+        else throw new IllegalArgumentException("This customer exist");
 
 
 
     }
 
-    //inserisce nella tabella custome l'id dell'user
+
+
+    public boolean checkCustomer(Customer customer) throws SQLException, ClassNotFoundException {
+        Connection con=Database.getConnection();
+        PreparedStatement ps=con.prepareStatement("SELECT * FROM customer join user on customer.user=user.idUser where phone=? and surname=?");
+        ps.setString(1,customer.getPhone());
+        ps.setString(2,customer.getSurname());
+        ResultSet rs=ps.executeQuery();
+
+        if(rs.next())
+        {
+            return true;
+        }
+        return  false;
+    }
+
+    //inserisce nella tabella customer l'id dell'user
     @Override
     public void insertCustomerId(int idUser) throws SQLException, ClassNotFoundException {
         Connection con=Database.getConnection();
-        PreparedStatement ps=con.prepareStatement("INSERT INTO customer(user)VALUES(?)");
+        PreparedStatement ps=con.prepareStatement("INSERT INTO customer(idCustomer,user,numberOrder,discount)VALUES(?,?,?,?)");
         ps.setInt(1,idUser);
+        ps.setInt(2,idUser);
+        ps.setInt(3,0);
+        ps.setBoolean(4,false);
         ps.executeUpdate();
         ps.close();
 

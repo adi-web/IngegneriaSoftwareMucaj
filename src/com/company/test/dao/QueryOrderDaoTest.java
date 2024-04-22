@@ -35,7 +35,16 @@ class QueryOrderDaoTest {
 
         con.prepareStatement("DELETE FROM customer").executeUpdate();
         con.prepareStatement("DELETE FROM user").executeUpdate();
+        con.prepareStatement("DELETE FROM address").executeUpdate();
+        con.prepareStatement("DELETE FROM Item").executeUpdate();
 
+
+        con.prepareStatement( "INSERT INTO item(idItem,name,price)VALUES(1,'margherita',6)").executeUpdate();
+        con.prepareStatement( "INSERT INTO item(idItem,name,price)VALUES(2,'salamino',7)").executeUpdate();
+        con.prepareStatement( "INSERT INTO item(idItem,name,price)VALUES(3,'4 stagioni',8)").executeUpdate();
+
+        con.prepareStatement("INSERT INTO address(idAddress,nameAddress,numberAddress,city)VALUES (1,'Via solliccinao ',18,50018)").executeUpdate();
+        con.prepareStatement("INSERT INTO address(idAddress,nameAddress,numberAddress,city)VALUES (2,'Via baccio da montelupo ',22,50018)").executeUpdate();
 
         con.prepareStatement("INSERT INTO user (idUser,name,surname,phone,address,role) VALUES (1,'andrea','petrucci','345680239',1,1)").executeUpdate();
         con.prepareStatement("INSERT INTO user (idUser,name,surname,phone,address,role) VALUES (2,'pietro','bonechi','3457890378',2,1)").executeUpdate();
@@ -43,12 +52,12 @@ class QueryOrderDaoTest {
         con.prepareStatement("INSERT INTO customer (idCustomer,numberOrder,user,discount) VALUES (9,5,1,false )").executeUpdate();
         con.prepareStatement("INSERT INTO customer (idCustomer,numberOrder,user,discount) VALUES (10,3,2,false)").executeUpdate();
 
-        con.prepareStatement("INSERT INTO myorder ( idOrder,stateOrder,departure,delivered,timeTodeliver,dateOrder,orderRider,customerOrder,noteOrder,payment) VALUES (1,'preparation',null,null,null,null,null,9,null,'paymentcard')").executeUpdate();
+        con.prepareStatement("INSERT INTO myorder ( idOrder,stateOrder,departure,delivered,timeTodeliver,dateOrder,orderRider,customerOrder,noteOrder,payment,topay) VALUES (1,'ordered',null,null,current_time,current_date,null,9,'suonare forte','paymentcard',40)").executeUpdate();
 
 
 
-        con.prepareStatement("INSERT INTO orderitem ( order_id,item_id,quantity) VALUES (1,1,10)").executeUpdate();
-        con.prepareStatement("INSERT INTO orderitem ( order_id,item_id,quantity) VALUES (1,2,3)").executeUpdate();
+        con.prepareStatement("INSERT INTO orderitem ( order_id,item_id,quantity) VALUES (1,1,2)").executeUpdate();
+        con.prepareStatement("INSERT INTO orderitem ( order_id,item_id,quantity) VALUES (1,2,4)").executeUpdate();
 
 
 
@@ -63,6 +72,8 @@ class QueryOrderDaoTest {
 
         con.prepareStatement("DELETE FROM customer").executeUpdate();
         con.prepareStatement("DELETE FROM user").executeUpdate();
+        con.prepareStatement("DELETE FROM address").executeUpdate();
+        con.prepareStatement("DELETE FROM Item").executeUpdate();
 
         Database.closeConnection(con);
     }
@@ -70,6 +81,7 @@ class QueryOrderDaoTest {
     //Controllo get e getItems
     @Test
     void testgetOrderById() throws SQLException, ClassNotFoundException {
+
         Order order= queryOrderDao.get(1);
 
         Assertions.assertNotNull(order);
@@ -97,22 +109,28 @@ class QueryOrderDaoTest {
 
 
     //test per l'inserimento provando che funziona anche il setdiscount
+    
     @Test
     void testInsertOrder() throws SQLException, ClassNotFoundException {
+
         Item i1=new Item(1,1,"margherita",6);
         Item i2=new Item(2,2,"salamino",7);
         Item i3=new Item(3,1,"4 stagioni",8);
         List<Item> items= new ArrayList<>();
+
         items.add(i1);
         items.add(i2);
         items.add(i3);
         Order order=new Order(2,items);
         order.setIdC(9);
+        order.setNote("suonare forte");
+
         queryOrderDao.insert(order);
 
         order= queryOrderDao.get(2);
         Assertions.assertNotNull(order);
-        Assertions.assertEquals("ordered",order.getState().getState());
+        Assertions.assertEquals("saved",order.getState().getState());
+        Assertions.assertEquals("suonare forte",order.getNote());
         DecimalFormat dec = new DecimalFormat("#0.0");
         Assertions.assertEquals("28,0",dec.format(order.getTopay()));
     }
@@ -128,5 +146,10 @@ class QueryOrderDaoTest {
             order=queryOrderDao.get(1);
             Assertions.assertNull(order);
 
+    }
+    @Test
+    void testChange()throws SQLException, ClassNotFoundException
+    {
+        queryOrderDao.change(1,1,3);
     }
 }

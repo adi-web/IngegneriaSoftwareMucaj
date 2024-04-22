@@ -20,7 +20,7 @@ public class CreditCardPayment implements PaymentStrategy {
     }
 
     @Override
-    public void pay() {
+    public void pay(float amount) {
 
         System.out.println("Simulating payment with Credit Card.");
         System.out.println("Card Number: " + cardNumber);

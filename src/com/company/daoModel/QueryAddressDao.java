@@ -16,17 +16,38 @@ public class QueryAddressDao implements AddressDao {
     public void insert(Address address) throws ClassNotFoundException, SQLException {
 
 
-        Address a=address;
-        Connection con = Database.getConnection();
-        PreparedStatement ps=con.prepareStatement("INSERT INTO address(idAddress,nameAddress,numberAddress,city) VALUES (?,?,?,?)"); //VALUES (1,a.name,a.city,");
-        ps.setInt(1,a.getId());
-        ps.setString(2,a.name);
-        ps.setInt(3, a.number);
-        ps.setInt(4, a.city);
-        ps.executeUpdate();
-        //System.out.println("inserito");
-        ps.close();
-        Database.closeConnection(con);
+        if(!exist(address)) {
+            Connection con = Database.getConnection();
+            PreparedStatement ps = con.prepareStatement("INSERT INTO address(idAddress,nameAddress,numberAddress,city) VALUES (?,?,?,?)"); //VALUES (1,address.name,address.city,");
+            ps.setInt(1, address.getId());
+            ps.setString(2, address.name);
+            ps.setInt(3, address.number);
+            ps.setInt(4, address.city);
+            ps.executeUpdate();
+            //System.out.println("inserito");
+            ps.close();
+            Database.closeConnection(con);
+        }
+        else throw new IllegalArgumentException("This address exist");
+
+    }
+
+    public boolean exist(Address address) throws SQLException, ClassNotFoundException {
+        Connection con=Database.getConnection();
+        PreparedStatement ps=con.prepareStatement("SELECT * FROM address where nameAddress=? and city=? and numberAddress=?");
+        ps.setString(1,address.name);
+        ps.setInt(2, address.number);
+        ps.setInt(3, address.city);
+        ResultSet rs=ps.executeQuery();
+
+        if(rs.next())
+        {
+            return true; // vuol dire che esiste gia questo indirizzo
+        }
+
+        return false;
+
+
 
     }
 

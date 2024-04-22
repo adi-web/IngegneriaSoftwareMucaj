@@ -18,7 +18,7 @@ class stateTest {
      @Test
     void testOrdered()
      {
-         Assertions.assertEquals("Ordinato", state.getState());
+         Assertions.assertEquals("ordered", state.getState());
      }
 
      @Test

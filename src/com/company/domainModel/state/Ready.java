@@ -6,6 +6,17 @@ public class Ready extends State {
     }
 
     @Override
+    public boolean canUpdate() {
+        return false;
+    }
+
+    @Override
+    public boolean canDelete() {
+        System.out.println("L'ordine non può essere cancellato perchè è stato già preparato");
+        return false;
+    }
+
+    @Override
     public String getState() {
         return super.getState();
     }

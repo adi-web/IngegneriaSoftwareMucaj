@@ -15,15 +15,20 @@ public class QueryOrderDao implements OrderDao{
     //funzione che mi serve per inserire un nuovo ordine inserendo l'id del ordine la data fatta e il cliente che ha richiesto l'ordine
     @Override
     public void insert(Order newInsert) throws ClassNotFoundException, SQLException {
+
+
+
         Connection con= Database.getConnection();
-        PreparedStatement ps=con.prepareStatement("INSERT  INTO myOrder(idOrder,stateOrder,dateOrder,customerOrder,topay) VALUES(?,?,?,?,?)");
+        PreparedStatement ps=con.prepareStatement("INSERT  INTO myOrder(idOrder,stateOrder,dateOrder,customerOrder,noteOrder,payment,topay,timeToDeliver) VALUES(?,?,?,?,?,'No payed',?,?)");
+
         java.util.Date utilDate = new java.util.Date();
         Timestamp sqlDate = new Timestamp(utilDate.getTime());
         int idCustomer=newInsert.getIdC();
         ps.setInt(1,newInsert.getId());
-        ps.setString(2,"preparation");
+        ps.setString(2,"saved");
         ps.setTimestamp(3,sqlDate);
         ps.setInt(4,idCustomer);
+        ps.setString(5,newInsert.getNote());
         Iterator<Item> item=newInsert.getItems().iterator();
 
         float pay=totToPay(item);
@@ -39,15 +44,18 @@ public class QueryOrderDao implements OrderDao{
         else
             getDiscountNextOrder(idCustomer);
 
-        ps.setFloat(5,pay);
+        ps.setFloat(6,pay);
+
+        ps.setTime(7, Time.valueOf(java.time.LocalTime.now()));
         ps.executeUpdate();
 
-        Ordered p=new Ordered();
-        newInsert.setState(p);
+        Saved s=new Saved();
+        newInsert.setState(s);
         insertOrderItem(newInsert.getId(),newInsert.getItems());
         queryCustomerDao.setNumberOrder(idCustomer);
 
 }
+
 
     public void getDiscountNextOrder(int idCustomer) throws SQLException, ClassNotFoundException {
 
@@ -74,15 +82,28 @@ public class QueryOrderDao implements OrderDao{
 
     }
 
-    
-//questa funzione mi inseririsce sulla tabella orderitem in base al idorder e id item e viene chiamata da insert
+    public void changePriceToPay(int idOrder,List<Item> items) throws SQLException, ClassNotFoundException
+    {
+        float pay=totToPay((Iterator<Item>) items);
+        Connection con= Database.getConnection();
+        PreparedStatement ps=con.prepareStatement("UPDATE myorder SET topay=? where idOrder=?");
+        ps.setFloat(1,get(idOrder).getTopay()+pay);
+        ps.setInt(2,idOrder);
+        ps.executeUpdate();
+        ps.close();
+
+
+    }
+
+
     public void insertOrderItem(int idOrder,List<Item> items) throws SQLException, ClassNotFoundException {
+
         Connection con= Database.getConnection();
         PreparedStatement ps=con.prepareStatement("INSERT  INTO orderitem(order_id,item_id,quantity) VALUES(?,?,?)");
         Iterator<Item> it=items.iterator();
         while(it.hasNext()){
             Item i = it.next();
-            ps.setInt(1,idOrder);// qua si inserisce id del ordine che stiamo inserendo item
+            ps.setInt(1,idOrder);
             ps.setInt(2,i.getId());
             ps.setInt(3,i.getQuantity());
             ps.addBatch();
@@ -92,14 +113,16 @@ public class QueryOrderDao implements OrderDao{
         Database.closeConnection(con);
     }
 
+    @Override
     public void deleteOrderItem(int id,int item_id) throws SQLException, ClassNotFoundException {
+
         Connection con=Database.getConnection();
+
         PreparedStatement delete=con.prepareStatement("delete from orderitem where order_id=? and item_id=?");
         delete.setInt(1,id);
         delete.setInt(2,item_id);
         delete.executeUpdate();
         delete.close();
-
 
 
     }
@@ -125,13 +148,49 @@ public class QueryOrderDao implements OrderDao{
     public void change(int id, int idItem,int quantity) throws SQLException, ClassNotFoundException {
 
         Connection con=Database.getConnection();
-        PreparedStatement update=con.prepareStatement("update orderitem set quantity=? where orderid=? and item_id=?");
+
+        PreparedStatement selectQuantity=con.prepareStatement("select quantity from orderitem where order_id=? and item_id=?");
+        selectQuantity.setInt(1,id);
+        selectQuantity.setInt(2,idItem);
+        ResultSet r=selectQuantity.executeQuery();
+        int q=0;
+        if(r.next())
+        {
+            q=r.getInt("quantity");
+        }
+        selectQuantity.close();
+        r.close();
+        if(q>quantity)
+        {
+            q=-1*(q-quantity);
+        }
+        else
+        {
+            q=(quantity-q);
+        }
+
+
+        PreparedStatement update=con.prepareStatement("update orderitem set quantity=? where order_id=? and item_id=?");
         update.setInt(1,quantity);
         update.setInt(2,id);
         update.setInt(3,idItem);
-
         update.executeUpdate();
         update.close();
+
+
+        PreparedStatement pay=con.prepareStatement("select price from item where idItem=?");
+        pay.setInt(1,idItem);
+        ResultSet rs=pay.executeQuery();
+        float price=0;
+        if(rs.next())
+        {
+            price=rs.getFloat("price");
+        }
+        PreparedStatement newToPay=con.prepareStatement("update myorder set topay=? where idOrder=?");
+        newToPay.setFloat(1,get(id).getTopay()+(price*q));
+        newToPay.setInt(2,id);
+        newToPay.executeUpdate();
+        newToPay.close();
         Database.closeConnection(con);
 
     }
@@ -153,6 +212,7 @@ public class QueryOrderDao implements OrderDao{
             o.setDateOrder(rs.getDate("dateOrder"));
             o.setIdC(rs.getInt("customerOrder"));
             o.setIdR(rs.getInt("orderRider"));
+            o.setTimeToDeliver(rs.getTime("timeToDeliver"));
             o.setPaymentStrategy(rs.getString("payment"));
             o.setNote(rs.getString("noteOrder"));
             this.setState(rs,o); // in modo da poter inserire lo state in order in base allo stato che è
@@ -192,9 +252,8 @@ public class QueryOrderDao implements OrderDao{
     }
 
 
-
     public void setState(ResultSet rs,Order o) throws SQLException {
-        if (Objects.equals(rs.getString("stateOrder"), "ordinato")){
+        if (Objects.equals(rs.getString("stateOrder"), "ordered")){
             Ordered ordered = new Ordered();
             o.setState(ordered);
         }
@@ -215,46 +274,13 @@ public class QueryOrderDao implements OrderDao{
         }
         else
         {
-            Ordered ordered=new Ordered();
-            o.setState(ordered);
+            Saved saved=new Saved();
+            o.setState(saved);
         }
 
 
 
     }
-
-/*
-    public void insertCustomer(Customer customer,int id) throws SQLException, ClassNotFoundException //da trovare il cliente e inserirlo nel ordine
-    {
-        QueryCustomerDao queryCustomerDao=new QueryCustomerDao();
-
-        Connection con= Database.getConnection();
-        PreparedStatement ps=con.prepareStatement("INSERT INTO myorder(customerOrder)VALUES(?) ");
-        ps.setInt(1,customer.getId());
-        ps.executeUpdate();
-        ps.close();
-
-        Database.closeConnection(con);
-    }*/
-/*
-    @Override
-    public int idOrdine(int idCustomer) throws SQLException, ClassNotFoundException {
-        Connection con=Database.getConnection();
-        PreparedStatement ps=con.prepareStatement("SELECT idOrdine from myorder WHERE customerOrder=?");
-        ps.setInt(1,idCustomer);
-        ResultSet a=ps.executeQuery();
-        int id=0;
-        while (a.next())
-        {
-            id=a.getInt("idOrdine");
-        }
-
-        ps.close();
-        Database.closeConnection(con);
-
-        return  id;
-
-    }*/
 
     @Override
     public void updateRiderDeparture(int idRider,int idOrder ) throws SQLException, ClassNotFoundException {

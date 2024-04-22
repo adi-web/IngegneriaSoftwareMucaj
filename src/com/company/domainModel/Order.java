@@ -3,6 +3,7 @@ package com.company.domainModel;
 import com.company.domainModel.state.Ordered;
 import com.company.domainModel.state.State;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +21,15 @@ public class Order {
     private List<Item> items;
     private String paymentStrategy;
     private float topay;
+    private Time timeToDeliver;
+
+    public Time getTimeToDeliver() {
+        return timeToDeliver;
+    }
+
+    public void setTimeToDeliver(Time timeToDeliver) {
+        this.timeToDeliver = timeToDeliver;
+    }
 
     public float getTopay() {
         return topay;
